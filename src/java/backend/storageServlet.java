@@ -270,22 +270,42 @@ public class storageServlet extends HttpServlet {
                     Integer quantity = Integer.parseInt(request.getParameter("quantityP"));
 
                     int id = productNameExist(name, em);
+                    int storedQuantity = -1;
 
                     if (id > 0) {
 
                         try {
 
-                            StoredProcedureQuery spq = em.createStoredProcedureQuery("expendingProduct");
-                            spq.registerStoredProcedureParameter("quantity", Integer.class, ParameterMode.IN);
-                            spq.setParameter("quantity", quantity);
+                            StoredProcedureQuery spq = em.createStoredProcedureQuery("emptyStock");
                             spq.registerStoredProcedureParameter("id", Integer.class, ParameterMode.IN);
                             spq.setParameter("id", id);
+                            spq.registerStoredProcedureParameter("quantity", Integer.class, ParameterMode.OUT);
                             spq.execute();
 
-                            JSONObject vissza = new JSONObject();
-                            vissza.put("expendingProduct", 1);
-                            out.write(vissza.toString());
-                            out.close();
+                            storedQuantity = Integer.parseInt(spq.getOutputParameterValue("quantity").toString());
+
+                            if (storedQuantity >= quantity) {
+
+                                StoredProcedureQuery storedProcedureQuery = em.createStoredProcedureQuery("expendingProduct");
+                                storedProcedureQuery.registerStoredProcedureParameter("quantity", Integer.class, ParameterMode.IN);
+                                storedProcedureQuery.setParameter("quantity", quantity);
+                                storedProcedureQuery.registerStoredProcedureParameter("id", Integer.class, ParameterMode.IN);
+                                storedProcedureQuery.setParameter("id", id);
+                                storedProcedureQuery.execute();
+
+                                JSONObject vissza = new JSONObject();
+                                vissza.put("expendingProduct", 1);
+                                out.write(vissza.toString());
+                                out.close();
+                            }
+                            
+                            if (storedQuantity < quantity) {
+                            
+                                JSONObject vissza = new JSONObject();
+                                vissza.put("expendingProduct", 4);
+                                out.write(vissza.toString());
+                                out.close();
+                            }
 
                         } catch (Exception ex) {
                             JSONObject vissza = new JSONObject();

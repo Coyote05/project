@@ -327,6 +327,9 @@
                             alert("Nincs bejelentkezve!");
                             window.location.assign("index.html");
                         }
+                        if (rd.expendingProduct == 4) {
+                            alert("Nincs készleten a mennyiség!");
+                        }
                     },
                     error: function (rd) {
                         alert(rd + " Hiba a termék kiadása közben!");
