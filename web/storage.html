@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<!-----------------------------------------------------------------------------
+|                                   Norman Teibert
+|                                  Frontend project
+|       
+------------------------------------------------------------------------------>
+<html>
+    <head>
+        <title>storage management</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <link type="text/css" rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <style>
+            .background{
+                background-image: url('img/desk.jpg');
+                background-position: center;
+                background-repeat: no-repeat;
+                background-attachment: fixed;
+            }
+            .right{
+                text-align: center;
+                width: 400px;
+            }
+            .title{
+                font-size: 30px;
+            }
+            .left{
+                width: 300px;
+                text-align: center;
+            }
+            .error{
+                color: red;
+            }
+        </style>
+        <script>
+            function listStockFirstPage() {
+                document.getElementById("table").innerHTML = "";
+                var listData = {"task": "listProductsFirstPage"};
+
+                $.ajax({
+                    url: "storageServlet",
+                    type: "POST",
+                    data: listData,
+                    success: function (rd) {
+
+                        if (rd.listFirstPage == 0) {
+                            alert("Nincs bejelentkezve!");
+                            window.location.assign("index.html");
+                        } else {
+
+                            var tabla = document.getElementById("table");
+
+                            var line = tabla.insertRow(0);
+                            line.insertCell(0).innerHTML = "név";
+                            line.insertCell(1).innerHTML = "típus";
+                            line.insertCell(2).innerHTML = "mennyiség";
+                            line.insertCell(3).innerHTML = "mértékegység";
+
+                            for (var i = 0; i < rd.length; i++) {
+                                var line = tabla.insertRow(1 + i);
+
+                                line.insertCell(0).innerHTML = rd[i].name;
+                                line.insertCell(1).innerHTML = rd[i].type;
+                                line.insertCell(2).innerHTML = rd[i].quantity;
+                                line.insertCell(3).innerHTML = rd[i].unit;
+
+                            }
+                            var listFirstBtn = document.getElementById("btnListStockFirstPage");
+                            var listSecondBtn = document.getElementById("btnListStockSecondPage")
+                            listFirstBtn.disabled = true;
+                            listSecondBtn.disabled = false;
+                        }
+                    },
+                    error: function (rd) {
+                        alert("error" + rd);
+                    }
+                });
+            }
+            function listStockSecondPage() {
+                document.getElementById("table").innerHTML = "";
+                var listData = {"task": "listProductsSecondPage"};
+
+                $.ajax({
+                    url: "storageServlet",
+                    type: "POST",
+                    data: listData,
+                    success: function (rd) {
+
+                        if (rd.listSecondPage == 0) {
+                            alert("Nincs bejelentkezve!");
+                            window.location.assign("index.html");
+                        } else {
+
+                            var tabla = document.getElementById("table");
+
+                            var line = tabla.insertRow(0);
+                            line.insertCell(0).innerHTML = "név";
+                            line.insertCell(1).innerHTML = "típus";
+                            line.insertCell(2).innerHTML = "mennyiség";
+                            line.insertCell(3).innerHTML = "mértékegység";
+
+                            for (var i = 0; i < rd.length; i++) {
+                                var line = tabla.insertRow(1 + i);
+
+                                line.insertCell(0).innerHTML = rd[i].name;
+                                line.insertCell(1).innerHTML = rd[i].type;
+                                line.insertCell(2).innerHTML = rd[i].quantity;
+                                line.insertCell(3).innerHTML = rd[i].unit;
+
+                            }
+                            var listFirstBtn = document.getElementById("btnListStockFirstPage");
+                            var listSecondBtn = document.getElementById("btnListStockSecondPage")
+                            listFirstBtn.disabled = false;
+                            listSecondBtn.disabled = true;
+                        }
+                    },
+                    error: function (rd) {
+                        alert("error" + rd);
+                    }
+                });
+            }
+            function checkingNewProduct() {
+
+                var name = document.getElementById("txtCProductname").value;
+                var type = document.getElementById("txtCType").value;
+                var unit = document.getElementById("txtCUnit").value;
+                var createBtn = document.getElementById("btnNewProduct");
+
+                if (name == "" || type == "" || unit == "") {
+
+                    createBtn.disabled = true;
+
+                    if (name == "") {
+                        document.getElementById("createError").innerHTML = "A termék neve nincs megadva!";
+                    }
+                    if (type == "") {
+                        document.getElementById("createError").innerHTML = "A típus nincs megadva!";
+                    }
+                    if (unit == "") {
+                        document.getElementById("createError").innerHTML = "A mértékegység nincs megadva!";
+                    }
+                } else {
+                    createBtn.disabled = false;
+                    document.getElementById("createError").innerHTML = "";
+                }
+            }
+            function createProduct() {
+                var name = document.getElementById("txtCProductname").value;
+                var type = document.getElementById("txtCType").value;
+                var unit = document.getElementById("txtCUnit").value;
+                var createProductData = {"nameP": name, "typeP": type, "unitP": unit, "task": "createProduct"};
+
+                $.ajax({
+                    url: "storageServlet",
+                    type: "POST",
+                    data: createProductData,
+
+                    success: function (rd) {
+                        if (rd.newProduct == 0) {
+                            alert("A terméket nem sikerült létrehozni!");
+                        }
+                        if (rd.newProduct == 1) {
+                            alert("A termék létrehozva!");
+                        }
+                        if (rd.newProduct == 2) {
+                            alert("A termék már létezik!");
+                        }
+                        if (rd.newProduct == 3) {
+                            alert("Nincs bejelentkezve!");
+                            window.location.assign("index.html");
+                        }
+                    },
+                    error: function (rd) {
+                        alert(rd + " Hiba a termék létrehozása közben!");
+                    }
+                });
+            }
+            function checkingDeleteProduct() {
+
+                var name = document.getElementById("txtDProductname").value;
+                var deleteBtn = document.getElementById("btnDeleteProduct");
+
+                if (name == "") {
+
+                    deleteBtn.disabled = true;
+                    document.getElementById("deleteError").innerHTML = "A termék neve nincs megadva!";
+
+                } else {
+                    deleteBtn.disabled = false;
+                    document.getElementById("deleteError").innerHTML = "";
+                }
+            }
+            function deleteProduct() {
+                var name = document.getElementById("txtDProductname").value;
+                var deleteProductData = {"nameP": name, "task": "deleteProduct"};
+
+                $.ajax({
+                    url: "storageServlet",
+                    type: "POST",
+                    data: deleteProductData,
+
+                    success: function (rd) {
+                        if (rd.deleteProduct == 0) {
+                            alert("Nem sikerült törölni a terméket!");
+                        }
+                        if (rd.deleteProduct == 1) {
+                            alert("A termék törölve!");
+                        }
+                        if (rd.deleteProduct == 2) {
+                            alert("A termék nem létezik!");
+                        }
+                        if (rd.deleteProduct == 3) {
+                            alert("Nem törölhető, amíg készleten van mennyiség a termékből!");
+                        }
+                        if (rd.deleteProduct == 4) {
+                            alert("Nincs bejelentkezve!");
+                            window.location.assign("index.html");
+                        }
+                    },
+                    error: function (rd) {
+                        alert(rd + " Hiba a termék törlése közben!");
+                    }
+                });
+            }
+            function checkingTakeInProduct() {
+
+                var name = document.getElementById("txtTProductname").value;
+                var quantity = document.getElementById("txtTQuantity").value;
+                var takeInBtn = document.getElementById("btnTakeInProduct");
+
+                if (name == "" || quantity == "" || quantity < 0) {
+
+                    takeInBtn.disabled = true;
+
+                    if (name == "") {
+                        document.getElementById("takeInError").innerHTML = "A termék neve nincs megadva!";
+                    }
+                    if (quantity == "") {
+                        document.getElementById("takeInError").innerHTML = "A mennyiség nincs megadva!";
+                    }
+                    if (quantity < 0) {
+                        document.getElementById("takeInError").innerHTML = "Csak pozitív szám adható meg!";
+                    }
+                } else {
+                    takeInBtn.disabled = false;
+                    document.getElementById("takeInError").innerHTML = "";
+                }
+            }
+            function takeInProduct() {
+                var name = document.getElementById("txtTProductname").value;
+                var quantity = document.getElementById("txtTQuantity").value;
+                var takeInProductData = {"nameP": name, "quantityP": quantity, "task": "takeInProduct"};
+
+                $.ajax({
+                    url: "storageServlet",
+                    type: "POST",
+                    data: takeInProductData,
+
+                    success: function (rd) {
+                        if (rd.takeInProduct == 0) {
+                            alert("A terméket nem sikerült bevételezni!");
+                        }
+                        if (rd.takeInProduct == 1) {
+                            alert("A bevétel megtörtént!");
+                        }
+                        if (rd.takeInProduct == 2) {
+                            alert("A termék nem létezik");
+                        }
+                        if (rd.takeInProduct == 3) {
+                            alert("Nincs bejelentkezve!");
+                            window.location.assign("index.html");
+                        }
+                    },
+                    error: function (rd) {
+                        alert(rd + " Hiba a termék bevételezése közben!");
+                    }
+                });
+            }
+            function checkingExpendingProduct() {
+
+                var name = document.getElementById("txtEProductname").value;
+                var quantity = document.getElementById("txtEQuantity").value;
+                var expendingBtn = document.getElementById("btnExpendingProduct");
+
+                if (name == "" || quantity == "" || quantity < 0) {
+
+                    expendingBtn.disabled = true;
+
+                    if (name == "") {
+                        document.getElementById("expendingError").innerHTML = "A termék neve nincs megadva!";
+                    }
+                    if (quantity == "") {
+                        document.getElementById("expendingError").innerHTML = "A mennyiség nincs megadva!";
+                    }
+                    if (quantity < 0) {
+                        document.getElementById("expendingError").innerHTML = "Csak pozitív szám adható meg!";
+                    }
+                } else {
+                    expendingBtn.disabled = false;
+                    document.getElementById("expendingError").innerHTML = "";
+                }
+            }
+            function expendingProduct() {
+                var name = document.getElementById("txtEProductname").value;
+                var quantity = document.getElementById("txtEQuantity").value;
+                var expendingProductData = {"nameP": name, "quantityP": quantity, "task": "expendingProduct"};
+
+                $.ajax({
+                    url: "storageServlet",
+                    type: "POST",
+                    data: expendingProductData,
+
+                    success: function (rd) {
+                        if (rd.expendingProduct == 0) {
+                            alert("A terméket nem sikerült kiadni!");
+                        }
+                        if (rd.expendingProduct == 1) {
+                            alert("A kiadás megtörtént!");
+                        }
+                        if (rd.expendingProduct == 2) {
+                            alert("A termék nem létezik");
+                        }
+                        if (rd.expendingProduct == 3) {
+                            alert("Nincs bejelentkezve!");
+                            window.location.assign("index.html");
+                        }
+                    },
+                    error: function (rd) {
+                        alert(rd + " Hiba a termék kiadása közben!");
+                    }
+                });
+            }
+            function logout() {
+                var logoutData = {"task": "logout"};
+
+                $.ajax({
+                    url: "adminServlet",
+                    type: "POST",
+                    data: logoutData,
+                    success: function (rd) {
+                        if (rd.loggedOut == 1) {
+                            window.location.assign("index.html");
+                        }
+                        if (rd.loggedOut == 0) {
+                            alert("Nem tud kijelentkezni!");
+                        }
+                        if (rd.loggedOut == 2) {
+                            alert("Nem volt bejelentkezve!");
+                            window.location.assign("index.html");
+                        }
+                    },
+                    error: function (rd) {
+                        alert("Error" + rd);
+                    }
+                });
+            }
+            function isAdmin() {
+                var backBtn = document.getElementById("btnBack");
+                var backData = {"task": "back"};
+
+                $.ajax({
+                    url: "adminServlet",
+                    type: "POST",
+                    data: backData,
+                    success: function (rd) {
+
+                        if (rd.admin == 1) {
+                            location.href = "admin.html";
+                        }
+                        if (rd.admin == 0) {
+                            alert("Nem engedélyezett!");
+                        }
+                    },
+                    error: function (rd) {
+                        alert("Error " + rd);
+                    }
+                });
+            }
+        </script>
+    </head>
+    <body class="background">
+        <div class="container">
+            <div class="row text-center"><br><br><br><br><br><br><br><br>
+                <div class="col-xs-4" style="padding-left: 2%"><br><br><br><br><br><br><br>
+                    <div class="left">
+                        <div class="title">Raktár</div><br><br><br>
+                        <img src="img/black-box.png" width="160" height="146"><br><br>
+                        <button id="btnLogout" type="button" class="btn btn-success btn-lg" onclick="logout()">Kijelentkezés</button><br><br>
+                        <button id="btnBack" type="button" class="btn btn-success btn-lg" onclick="isAdmin()">Vissza az Admin oldalra</button><br><br>
+                    </div>
+                </div>
+                <div class="col-xs-8" style="padding-left: 5%"><br><br><br><br><br><br><br><br>
+                    <div class="right">
+                        <button type="button" class="btn btn-success btn-lg" data-toggle="modal" data-target="#listStockModal">Készlet listázása</button><br><br>
+                        <div id="listStockModal" class="modal fade" role="dialog">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        <h4 class="modal-title" style="font-weight: bold">Készlet listázása</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <button id="btnListStockFirstPage" class="btn btn-success" onclick="listStockFirstPage()">Első 15 termék listázása</button>
+                                        <button id="btnListStockSecondPage" class="btn btn-success" disabled onclick="listStockSecondPage()">Következő 15 termék listázása</button><br><br>
+                                        <table id="table" class="table table-striped"></table>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-success btn-lg" data-toggle="modal" data-target="#createProductModal">Új termék létrehozása</button><br><br>
+                        <div id="createProductModal" class="modal fade" role="dialog">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        <h4 class="modal-title" style="font-weight: bold">Új termék létrehozása</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <input type="text" id="txtCProductname" onkeyup="checkingNewProduct()" placeholder="Név"><br><br>
+                                        <input type="text" id="txtCType" onkeyup="checkingNewProduct()" placeholder="Típus"><br><br>
+                                        <input type="text" id="txtCUnit" onkeyup="checkingNewProduct()" placeholder="Mértékegység"><br><br>
+                                        <button id="btnNewProduct" class="btn btn-success" disabled onclick="createProduct()">Létrehoz</button>
+                                        <div class="error" id="createError"></div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-success btn-lg" data-toggle="modal" data-target="#deleteProductModal">Termék törlése</button><br><br>
+                        <div id="deleteProductModal" class="modal fade" role="dialog">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        <h4 class="modal-title" style="font-weight: bold">Termék törlése</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <input type="text" id="txtDProductname" onkeyup="checkingDeleteProduct()" placeholder="Termék neve"><br><br>
+                                        <button id="btnDeleteProduct" class="btn btn-success" disabled onclick="deleteProduct()">Töröl</button>
+                                        <div class="error" id="deleteError"></div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-success btn-lg" data-toggle="modal" data-target="#takeInProductModal">Bevétel</button><br><br>
+                        <div id="takeInProductModal" class="modal fade" role="dialog">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        <h4 class="modal-title" style="font-weight: bold">Bevétel</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <input type="text" id="txtTProductname" onkeyup="checkingTakeInProduct()" placeholder="Termék neve"><br><br>
+                                        <input type="text" pattern="[0-9]*" id="txtTQuantity" onkeyup="checkingTakeInProduct()" placeholder="Mennyiség"><br><br>
+                                        <button id="btnTakeInProduct" class="btn btn-success" disabled onclick="takeInProduct()">Bevételez</button>
+                                        <div class="error" id="takeInError"></div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-success btn-lg" data-toggle="modal" data-target="#expendingProductModal">Kiadás</button><br><br>
+                        <div id="expendingProductModal" class="modal fade" role="dialog">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        <h4 class="modal-title" style="font-weight: bold">Kiadás</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <input type="text" id="txtEProductname" onkeyup="checkingExpendingProduct()" placeholder="Termék neve"><br><br>
+                                        <input type="text" pattern="[0-9]*" id="txtEQuantity" onkeyup="checkingExpendingProduct()" placeholder="Mennyiség"><br><br>
+                                        <button id="btnExpendingProduct" class="btn btn-success" disabled onclick="expendingProduct()">Kiad</button>
+                                        <div class="error" id="expendingError"></div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

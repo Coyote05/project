@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<!-----------------------------------------------------------------------------
+|                                   Norman Teibert
+|                                  Frontend project
+|       
+------------------------------------------------------------------------------>
+
+<html>
+    <head>
+        <title>user management</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <link type="text/css" rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+        <link rel="stylesheet" href="style.css" type="text/css"/>
+
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <style>
+            .background{
+                background-image: url('img/desk.jpg');
+                background-position: center;
+                background-repeat: no-repeat;
+                background-attachment: fixed;
+            }
+            .right{
+                text-align: center;
+                width: 500px;
+            }
+            .title{
+                font-size: 30px;
+            }
+            .left{
+                width: 300px;
+                text-align: center;
+            }
+            .error{
+                color: red;
+            }
+        </style>
+        <script>
+            function listUsers() {
+                var listData = {"task": "listUsers"};
+
+                $.ajax({
+                    url: "userServlet",
+                    type: "POST",
+                    data: listData,
+                    success: function (rd) {
+
+                        if (rd.list == 0) {
+                            alert("Nincs bejelentkezve!");
+                            window.location.assign("index.html");
+                        } else {
+
+                            var tabla = document.getElementById("table");
+
+                            var line = tabla.insertRow(0);
+                            line.insertCell(0).innerHTML = "azonosító";
+                            line.insertCell(1).innerHTML = "felhasználónév";
+
+                            for (var i = 0; i < rd.length; i++) {
+                                var line = tabla.insertRow(1 + i);
+
+                                line.insertCell(0).innerHTML = rd[i].id;
+                                line.insertCell(1).innerHTML = rd[i].username;
+                            }
+                            var listBtn = document.getElementById("btnListUsers");
+                            listBtn.disabled = true;
+                        }
+                    },
+                    error: function (rd) {
+                        alert("error" + rd);
+                    }
+                });
+            }
+            function checkingNewUser() {
+
+                var newUsername = document.getElementById("txtCNewUsername").value;
+                var newPassword = document.getElementById("txtCNewPassword").value;
+                var createBtn = document.getElementById("btnNewUser");
+
+                if (newUsername == "" || newPassword == "") {
+
+                    createBtn.disabled = true;
+
+                    if (newUsername == "") {
+                        document.getElementById("createError").innerHTML = "A felhasználónév nincs megadva!";
+                    }
+                    if (newPassword == "") {
+                        document.getElementById("createError").innerHTML = "A jelszó nincs megadva!";
+                    }
+                } else {
+                    createBtn.disabled = false;
+                    document.getElementById("createError").innerHTML = "";
+                }
+            }
+            function createUser() {
+                var newUsername = document.getElementById("txtCNewUsername").value;
+                var newPassword = document.getElementById("txtCNewPassword").value;
+                var createUserData = {"newUsernameP": newUsername, "newPasswordP": newPassword, "task": "createUser"};
+
+                $.ajax({
+                    url: "userServlet",
+                    type: "POST",
+                    data: createUserData,
+
+                    success: function (rd) {
+                        if (rd.newUser == 0) {
+                            alert("A felhasználót nem sikerült létrehozni!");
+                        }
+                        if (rd.newUser == 1) {
+                            alert("Felhasználó létrehozva!");
+                        }
+                        if (rd.newUser == 2) {
+                            alert("A felhasználónév már létezik!");
+                        }
+                        if (rd.newUser == 3) {
+                            alert("Nincs bejelentkezve!");
+                            window.location.assign("index.html");
+                        }
+                    },
+                    error: function (rd) {
+                        alert(rd + " Hiba a felhasználó létrehozása közben!");
+                    }
+                });
+            }
+            function checkingUpdateUser() {
+
+                var oldUsername = document.getElementById("txtUOldUsername").value;
+                var newUsername = document.getElementById("txtUNewUsername").value;
+                var newPassword = document.getElementById("txtUNewPassword").value;
+                var updateBtn = document.getElementById("btnUpdateUser");
+
+                if (oldUsername == "" || newUsername == "" || newPassword == "") {
+
+                    updateBtn.disabled = true;
+
+                    if (newUsername == "") {
+                        document.getElementById("updateError").innerHTML = "A felhasználónév nincs megadva!";
+                    }
+                    if (newPassword == "") {
+                        document.getElementById("updateError").innerHTML = "A jelszó nincs megadva!";
+                    }
+                } else {
+                    updateBtn.disabled = false;
+                    document.getElementById("updateError").innerHTML = "";
+                }
+            }
+            function updateUser() {
+                var oldUsername = document.getElementById("txtUOldUsername").value;
+                var newUsername = document.getElementById("txtUNewUsername").value;
+                var newPassword = document.getElementById("txtUNewPassword").value;
+                var updateUserData = {"oldUsernameP": oldUsername, "newUsernameP": newUsername, "newPasswordP": newPassword, "task": "updateUser"};
+
+                $.ajax({
+                    url: "userServlet",
+                    type: "POST",
+                    data: updateUserData,
+
+                    success: function (rd) {
+                        if (rd.updateUser == 0) {
+                            alert("A felhasználó adatait nem sikerült módosítani!");
+                        }
+                        if (rd.updateUser == 1) {
+                            alert("Felhasználó adatai módosultak!");
+                        }
+                        if (rd.updateUser == 2) {
+                            alert("Felhasználó nem létezik!");
+                        }
+                        if (rd.updateUser == 3) {
+                            alert("Nincs bejelentkezve!");
+                            window.location.assign("index.html");
+                        }
+                    },
+                    error: function (rd) {
+                        alert(rd + " Hiba a felhasználó módosítása közben!");
+                    }
+                });
+            }
+            function checkingDeleteUser() {
+
+                var username = document.getElementById("txtDUsername").value;
+                var deleteBtn = document.getElementById("btnDelUser");
+
+                if (username == "") {
+
+                    deleteBtn.disabled = true;
+
+                    document.getElementById("deleteError").innerHTML = "A felhasználónév nincs megadva!";
+
+                } else {
+                    deleteBtn.disabled = false;
+                    document.getElementById("deleteError").innerHTML = "";
+                }
+            }
+            function deleteUser() {
+                var username = document.getElementById("txtDUsername").value;
+                var deleteUserData = {"usernameP": username, "task": "deleteUser"};
+
+                $.ajax({
+                    url: "userServlet",
+                    type: "POST",
+                    data: deleteUserData,
+
+                    success: function (rd) {
+                        if (rd.deleteUser == 0) {
+                            alert("A felhasználót nem sikerült törölni!");
+                        }
+                        if (rd.deleteUser == 1) {
+                            alert("Felhasználó törölve!");
+                        }
+                        if (rd.deleteUser == 2) {
+                            alert("Felhasználó nem létezik!");
+                        }
+                        if (rd.deleteUser == 3) {
+                            alert("Admin nem törölhető");
+                        }
+                        if (rd.deleteUser == 4) {
+                            alert("Nincs bejelentkezve!");
+                            window.location.assign("index.html");
+                        }
+                    },
+                    error: function (rd) {
+                        alert(rd + " Hiba a felhasználó törlése közben!");
+                    }
+                });
+            }
+
+            function goBack() {
+                location.href = "admin.html";
+            }
+        </script>
+    </head>
+    <body class="background">
+        <div class="container">
+            <div class="row text-center"><br><br><br><br><br><br><br><br>
+                <div class="col-xs-4" style="padding-left: 2%"><br><br><br><br><br><br><br>
+                    <div class="left">
+                        <div class="title">Felhasználók</div><br><br><br>
+                        <img src="img/account.png" width="160" height="142"><br><br>
+                        <button type="button" class="btn btn-success btn-lg" onclick="goBack()">Vissza az Admin oldalra</button>
+                    </div>
+                </div>
+                <div class="col-xs-8"><br><br><br><br><br><br><br><br>
+                    <div class="right">
+                        <button type="button" class="btn btn-success btn-lg" data-toggle="modal" data-target="#listUsersModal">Felhasználók adatainak listázása</button><br><br><br>
+                        <div id="listUsersModal" class="modal fade" role="dialog">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        <h4 class="modal-title" style="font-weight: bold">Felhasználók adatainak listázása</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <button id="btnListUsers" class="btn btn-success" onclick="listUsers()">Listázás</button><br><br>
+                                        <table id="table" class="table table-striped"></table>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-success btn-lg" data-toggle="modal" data-target="#createUserModal">Új felhasználó létrehozása</button><br><br><br>
+                        <div id="createUserModal" class="modal fade" role="dialog">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        <h4 class="modal-title" style="font-weight: bold">Új felhasználó létrehozása</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <input type="text" id="txtCNewUsername" onkeyup="checkingNewUser()" placeholder="Felhasználónév"><br><br>
+                                        <input type="text" id="txtCNewPassword" onkeyup="checkingNewUser()" placeholder="Jelszó"><br><br>
+                                        <button id="btnNewUser" class="btn btn-success" disabled onclick="createUser()">Létrehoz</button>
+                                        <div class="error" id="createError"></div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-success btn-lg" data-toggle="modal" data-target="#updateUserModal">Felhasználó adatainak módosítása</button><br><br><br>
+                        <div id="updateUserModal" class="modal fade" role="dialog">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        <h4 class="modal-title" style="font-weight: bold">Felhasználó adatainak módosítása</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <input type="text" id="txtUOldUsername" onkeyup="checkingUpdateUser()" placeholder="Régi felhasználónév"><br><br>
+                                        <input type="text" id="txtUNewUsername" onkeyup="checkingUpdateUser()" placeholder="Új felhasználónév"><br><br>
+                                        <input type="text" id="txtUNewPassword" onkeyup="checkingUpdateUser()" placeholder="Új jelszó"><br><br>
+                                        <button id="btnUpdateUser" class="btn btn-success" disabled onclick="updateUser()">Módosít</button>
+                                        <div class="error" id="updateError"></div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-success btn-lg" data-toggle="modal" data-target="#deleteUserModal">Felhasználó törlése</button><br><br><br>
+                        <div id="deleteUserModal" class="modal fade" role="dialog">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        <h4 class="modal-title" style="font-weight: bold">Felhasználó törlése</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <input type="text" id="txtDUsername" onkeyup="checkingDeleteUser()" placeholder="Felhasználó neve"><br><br>
+                                        <button id="btnDelUser" class="btn btn-success" disabled onclick="deleteUser()">Töröl</button>
+                                        <div class="error" id="deleteError"></div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
